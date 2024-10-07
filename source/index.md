@@ -33,6 +33,19 @@
 * ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonパッケージ
 * Djangoコミュニティが開発している
 
+### asgirefに依存しているツール、フレームワーク
+* Daphne
+* Django
+* Connexion
+
+### 参考資料
+
+以下のドキュメントにasgirefを使ったツール、フレームワークのリストがある。
+
+[asgiref/docs/implementations.rst at main · django/asgiref](https://github.com/django/asgiref/blob/main/docs/implementations.rst)
+
+ただし、バージョンが上がってasgirefに依存しなくなったものも載っている。
+
 ## asgiref.local.Localとは何か
 TODO 実際に私が開発でasgiref.local.Localを使った経緯を交えて、asgiref.local.Localの使い方について解説します。
 
