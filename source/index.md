@@ -19,6 +19,9 @@
 * トーク中で解説するので、なんとなく知っていればOK
 
 ### このトークで得られること
+* asgirefの概要
+* asgiref.local.Localの用途、存在する理由
+
 ### このトークの構成
 * asgirefとは何か
 * asgiref.local.Localとは何か
