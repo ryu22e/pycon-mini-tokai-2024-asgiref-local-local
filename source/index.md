@@ -4,6 +4,12 @@
 
 ## はじめに
 ### 自己紹介
+* Ryuji Tsutsui@ryu22e
+* さくらインターネット株式会社所属
+* Python歴は13年くらい（主にDjango）
+* Python Boot Camp、Shonan.py、GCPUG Shonanなどコミュニティ活動もしています
+* 著書（共著）：『[Python実践レシピ](https://gihyo.jp/book/2022/978-4-297-12576-9)』
+
 ### このトークでお話すること
 ### このトークの対象者
 ### このトークで得られること
