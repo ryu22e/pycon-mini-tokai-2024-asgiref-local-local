@@ -29,7 +29,9 @@
 * asgiref.local.Localとcontextvars.ContextVarの違い
 
 ## asgirefとは何か
-TODO asgirefというPythonパッケージの概要について解説します。
+### asgirefの概要
+* ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonパッケージ
+* Djangoコミュニティが開発している
 
 ## asgiref.local.Localとは何か
 TODO 実際に私が開発でasgiref.local.Localを使った経緯を交えて、asgiref.local.Localの使い方について解説します。
