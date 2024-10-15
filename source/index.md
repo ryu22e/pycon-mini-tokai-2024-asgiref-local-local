@@ -117,7 +117,112 @@ local = Local()
 * どこが違うのだろうか？
 
 ## asgiref.local.Localとthreading.localの違い
-TODO asgiref.local.Localは標準モジュールthreadingに定義されているlocalとよく似ています。両者の違いについて説明します。
+### threading.localとは
+* threadingは標準モジュール
+* threading.localは、スレッドごとに固有のローカルストレージ
+
+### threading.localのサンプルコード（マルチスレッド）
+```{revealjs-code-block} python
+import uuid
+import time
+import threading
+from threading import local
+
+local_storage = local()
+
+def test_task(wait):
+    # スレッドID取得
+    thread_id = threading.get_ident()
+    # ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = start_unique_id
+
+    # wait秒待つ
+    time.sleep(wait)
+
+    # wait秒待機後のユニークIDを取得
+    # （他のスレッドが値を上書きしていないはず）
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+def main():
+    # 待機時間が異なるスレッドを3つ立ち上げる
+    threads = [
+        threading.Thread(target=test_task, args=(3,)),
+        threading.Thread(target=test_task, args=(2,)),
+        threading.Thread(target=test_task, args=(1,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == "__main__":
+    main()
+```
+
+### threading.localのサンプルコード（マルチスレッド）実行結果
+`threading.local`に入れたユニークIDがスレッドごとに異なることがわかる。
+
+```{revealjs-code-block} shell
+thread_id=6173028352 (start_unique_id='0863e8995b064f3e9c24ed1dbe926577') == (end_unique_id='0863e8995b064f3e9c24ed1dbe926577')
+thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (end_unique_id='0fe21b299ab34f7e83fb979277ccce3a')
+thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
+```
+
+### threading.localが使えないケース
+* コルーチンを使ったコードではthreading.localを使えない
+* なぜなら、コルーチンはシングルスレッドで複数のタスクを処理するため、スレッドごとのローカルストレージが使えない
+
+### threading.localのサンプルコード（コルーチン）
+```{revealjs-code-block} python
+import threading
+import asyncio
+import uuid
+
+local_storage = threading.local()
+
+async def test_task(wait):
+    start_request_id = uuid.uuid4().hex
+    thread_id = threading.get_ident()
+    local_storage.request_id = start_request_id
+
+    # ここで待機中に別のコルーチンでlocal_storage.request_idを上書きしてしまう場合がある。
+    await asyncio.sleep(wait)
+
+    end_request_id = getattr(local_storage, "request_id", None)
+    equal_or_not = "==" if start_request_id == end_request_id else "!="
+    print(f"{thread_id=} ({start_request_id=}) {equal_or_not} ({end_request_id=})")
+
+async def main():
+    tasks = (
+        test_task(3),
+        test_task(2),
+        test_task(1),
+    )
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### threading.localのサンプルコード（コルーチン）実行結果
+`wait`秒待機中に他のコルーチンが`local_storage.request_id`を上書きしてしまうことがある。
+
+```{revealjs-code-block} shell
+thread_id=8370802496 (start_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (start_request_id='cdd46248fbe44f57a2a488919add7d1e') != (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (start_request_id='39eb437c91e8437dae500b91e36bb3ff') != (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+```
+
+### threading.localのサンプルコード（マルチスレッド）
+
+### threading.localのサンプルコード（マルチスレッド）実行結果
+
+### threading.localのサンプルコード（コルーチン）
+
+### threading.localのサンプルコード（コルーチン）実行結果
 
 ## asgiref.local.Localとcontextvars.ContextVarの違い
 TODO asgiref.local.Localの内部では、標準モジュールcontextvarsに定義されているContextVarをラップしています。ContextVarの用途とラップしている理由について説明します。
