@@ -463,4 +463,9 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ## 最後に
 ### まとめ
+* threading.localはスレッドごとに固有のローカルストレージ
+* ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
+* asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
+* asgiref.local.Localは内部でcontextvars.ContextVarを使っている
+
 ### ご清聴ありがとうございました
