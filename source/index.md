@@ -416,9 +416,47 @@ A.内部でcontextvars.ContextVarを使っているから（このあと詳し�
 
 ### contextvars.ContextVarのサンプルコード
 ```{revealjs-code-block} python
+import threading
+from contextvars import ContextVar
+import asyncio
+import uuid
+
+# コンテキスト変数を宣言
+local_storage = ContextVar("local_storage", default=None)
+
+async def test_task(wait):
+    start_unique_id = uuid.uuid4().hex
+    thread_id = threading.get_ident()
+    # 値の設定はset()メソッドで行う
+    local_storage.set(start_unique_id)
+
+    await asyncio.sleep(wait)
+
+    # 値の取得はget()メソッドで行う
+    end_unique_id = local_storage.get()
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+async def main():
+    tasks = (
+        test_task(3),
+        test_task(2),
+        test_task(1),
+    )
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ### contextvars.ContextVarのサンプルコード実行結果
+コルーチンごとに固有のローカルストレージが使えることがわかる。
+
+```{revealjs-code-block} shell
+thread_id=8308739904 (start_unique_id='011b6db1ddca48b2a353667e9c79f34a') == (end_unique_id='011b6db1ddca48b2a353667e9c79f34a')
+thread_id=8308739904 (start_unique_id='dcfc53f6ec9149f99838a6815608c12b') == (end_unique_id='dcfc53f6ec9149f99838a6815608c12b')
+thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (end_unique_id='42ee7264770745a6b90b9e5e98082a57')
+```
 
 ### contextvars.ContextVarの弱点
 * contextvars.ContextVarはスレッドセーフではない
