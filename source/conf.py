@@ -71,7 +71,7 @@ html_theme = "alabaster"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-revealjs_style_theme = "simple"
+revealjs_style_theme = "white"
 revealjs_script_conf = {
     "slideNumber": True,
     "hash": True,
