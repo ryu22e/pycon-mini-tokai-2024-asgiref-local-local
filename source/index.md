@@ -47,7 +47,6 @@
 ただし、バージョンが上がってasgirefに依存しなくなったものも載っている。
 
 ## asgiref.local.Localとは何か
-TODO 実際に私が開発でasgiref.local.Localを使った経緯を交えて、asgiref.local.Localの使い方について解説します。
 
 ### docstringによると
 > Local storage for async tasks.
