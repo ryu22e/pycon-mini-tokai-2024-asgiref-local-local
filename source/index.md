@@ -184,16 +184,16 @@ import uuid
 local_storage = threading.local()
 
 async def test_task(wait):
-    start_request_id = uuid.uuid4().hex
+    start_unique_id = uuid.uuid4().hex
     thread_id = threading.get_ident()
-    local_storage.request_id = start_request_id
+    local_storage.unique_id = start_unique_id
 
-    # ここで待機中に別のコルーチンでlocal_storage.request_idを上書きしてしまう場合がある。
+    # ここで待機中に別のコルーチンでlocal_storage.unique_idを上書きしてしまう場合がある。
     await asyncio.sleep(wait)
 
-    end_request_id = getattr(local_storage, "request_id", None)
-    equal_or_not = "==" if start_request_id == end_request_id else "!="
-    print(f"{thread_id=} ({start_request_id=}) {equal_or_not} ({end_request_id=})")
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
 
 async def main():
     tasks = (
@@ -208,24 +208,220 @@ if __name__ == "__main__":
 ```
 
 ### threading.localのサンプルコード（コルーチン）実行結果
-`wait`秒待機中に他のコルーチンが`local_storage.request_id`を上書きしてしまうことがある。
+`wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
 
 ```{revealjs-code-block} shell
-thread_id=8370802496 (start_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
-thread_id=8370802496 (start_request_id='cdd46248fbe44f57a2a488919add7d1e') != (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
-thread_id=8370802496 (start_request_id='39eb437c91e8437dae500b91e36bb3ff') != (end_request_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (start_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (start_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 ```
 
 ### threading.localのサンプルコード（マルチスレッド）
+```{revealjs-code-block} python
+import uuid
+import time
+import threading
+from threading import local
+
+local_storage = local()
+
+def test_task(wait):
+    # スレッドID取得
+    thread_id = threading.get_ident()
+    # ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = start_unique_id
+
+    # wait秒待つ
+    time.sleep(wait)
+
+    # wait秒待機後のユニークIDを取得
+    # （他のスレッドが値を上書きしていないはず）
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+def main():
+    # 待機時間が異なるスレッドを3つ立ち上げる
+    threads = [
+        threading.Thread(target=test_task, args=(3,)),
+        threading.Thread(target=test_task, args=(2,)),
+        threading.Thread(target=test_task, args=(1,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == "__main__":
+    main()
+```
 
 ### threading.localのサンプルコード（マルチスレッド）実行結果
+`threading.local`と同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
+
+```{revealjs-code-block} shell
+thread_id=6146109440 (start_unique_id='cbe142e8e52346cdaa708f51faf3e27b') == (end_unique_id='cbe142e8e52346cdaa708f51faf3e27b')
+thread_id=6129283072 (start_unique_id='2d8fe026449c4060abafa488908521a8') == (end_unique_id='2d8fe026449c4060abafa488908521a8')
+thread_id=6112456704 (start_unique_id='3c9e2a2889c44c9e8427037ebb20d568') == (end_unique_id='3c9e2a2889c44c9e8427037ebb20d568')
+```
 
 ### threading.localのサンプルコード（コルーチン）
+```{revealjs-code-block} python
+import threading
+from threading import local
+import asyncio
+import uuid
+
+local_storage = local()
+
+async def test_task(wait):
+    start_unique_id = uuid.uuid4().hex
+    thread_id = threading.get_ident()
+    local_storage.unique_id = start_unique_id
+
+    await asyncio.sleep(wait)
+
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+async def main():
+    tasks = (
+        test_task(3),
+        test_task(2),
+        test_task(1),
+    )
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 
 ### threading.localのサンプルコード（コルーチン）実行結果
+`wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
+
+```{revealjs-code-block} shell
+thread_id=8323698496 (start_unique_id='a7d39fbb04514396b6dc8a1d232135f0') == (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
+thread_id=8323698496 (start_unique_id='08bd2755081e4ddd88596416d89aecf3') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
+thread_id=8323698496 (start_unique_id='3ca6b2e8c01b4cee919f15e50a246548') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
+```
+
+### asgiref.local.Localのサンプルコード（マルチスレッド）
+```{revealjs-code-block} python
+import uuid
+import time
+import threading
+
+from asgiref.local import Local
+
+local_storage = Local()  # ここを変えただけ
+
+def test_task(wait):
+    # スレッドID取得
+    thread_id = threading.get_ident()
+    # ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = start_unique_id
+
+    # wait秒待つ
+    time.sleep(wait)
+
+    # wait秒待機後のユニークIDを取得
+    # （他のスレッドが値を上書きしていないはず）
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+def main():
+    # 待機時間が異なるスレッドを3つ立ち上げる
+    threads = [
+        threading.Thread(target=test_task, args=(3,)),
+        threading.Thread(target=test_task, args=(2,)),
+        threading.Thread(target=test_task, args=(1,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == "__main__":
+    main()
+```
+
+### asgiref.local.Localのサンプルコード（マルチスレッド）実行結果
+threading.localと同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
+
+```{revealjs-code-block} shell
+thread_id=6140276736 (start_unique_id='43faa0bb3add4921b1e2649af269646e') == (end_unique_id='43faa0bb3add4921b1e2649af269646e')
+thread_id=6123450368 (start_unique_id='d244e874e5f74940a944895c641302c3') == (end_unique_id='d244e874e5f74940a944895c641302c3')
+thread_id=6106624000 (start_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (end_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b')
+```
+
+### asgiref.local.Localのサンプルコード（コルーチン）
+```{revealjs-code-block} python
+import threading
+import asyncio
+import uuid
+
+from asgiref.local import Local
+
+local_storage = Local()  # ここを変えただけ
+
+async def test_task(wait):
+    start_unique_id = uuid.uuid4().hex
+    thread_id = threading.get_ident()
+    local_storage.unique_id = start_unique_id
+
+    await asyncio.sleep(wait)
+
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+async def main():
+    tasks = (
+        test_task(3),
+        test_task(2),
+        test_task(1),
+    )
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### asgiref.local.Localのサンプルコード（コルーチン）実行結果
+コルーチンごとに固有のローカルストレージが使えることがわかる。
+
+```{revealjs-code-block} shell
+thread_id=8323698496 (start_unique_id='9484892561164a18af996c2cf7ab6c2f') == (end_unique_id='9484892561164a18af996c2cf7ab6c2f')
+thread_id=8323698496 (start_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559') == (end_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559')
+thread_id=8323698496 (start_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (end_unique_id='9fc06c8056184fc88c1f3af56e77330d')
+```
+
+### ここまでのまとめ
+* threading.localはスレッドごとに固有のローカルストレージ
+* ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
+* asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
+
+### Q. asgiref.local.Localはなぜコルーチンでも使えるのか？
+A.内部でcontextvars.ContextVarを使っているから（このあと詳しく説明します）
 
 ## asgiref.local.Localとcontextvars.ContextVarの違い
-TODO asgiref.local.Localの内部では、標準モジュールcontextvarsに定義されているContextVarをラップしています。ContextVarの用途とラップしている理由について説明します。
+### contextvars.ContextVarとは
+* contextvarsはPythonの標準モジュール
+* contextvars.ContextVarは、コンテキスト変数を宣言するためのクラス
+* コルーチンごとに固有のコンテキスト変数を使える
+
+### contextvars.ContextVarのサンプルコード
+```{revealjs-code-block} python
+```
+
+### contextvars.ContextVarのサンプルコード実行結果
+
+### contextvars.ContextVarの弱点
+* contextvars.ContextVarはスレッドセーフではない
 
 ## 最後に
 ### まとめ
