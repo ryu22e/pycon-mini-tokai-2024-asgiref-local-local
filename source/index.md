@@ -468,3 +468,9 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 * asgiref.local.Localは内部でcontextvars.ContextVarを使っている
 
 ### ご清聴ありがとうございました
+
+```{figure} thank-you-for-your-attention.*
+:alt: AIが考えた「地味だけど便利なasgiref.local.Local」
+
+AIが考えた「地味だけど便利なasgiref.local.Local」
+```
