@@ -306,6 +306,12 @@ thread_id=8323698496 (start_unique_id='08bd2755081e4ddd88596416d89aecf3') != (en
 thread_id=8323698496 (start_unique_id='3ca6b2e8c01b4cee919f15e50a246548') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
 ```
 
+### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
+マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
+
+### そこで`asgiref.local.Local`クラスの登場
+`asgiref.local.Local`は、マルチスレッド、コルーチンの両方で使えるローカルストレージ
+
 ### asgiref.local.Localのサンプルコード（マルチスレッド）
 ```{revealjs-code-block} python
 import uuid
