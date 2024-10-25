@@ -20,7 +20,14 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "pip install -r requirements_dev.txt",
 
-	"postStartCommand": "sphinx-autobuild source build/revealjs -b revealjs"
+	"postStartCommand": "sphinx-autobuild source build/revealjs -b revealjs",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"DavidAnson.vscode-markdownlint"
+			]
+		}
+	}
 
 	// Configure tool-specific properties.
 	// "customizations": {},
