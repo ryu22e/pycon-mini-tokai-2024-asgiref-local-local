@@ -185,14 +185,15 @@ local_storage = local()
 def test_task(wait):
     # スレッドID取得
     thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
+
+    # 1. ユニークIDをローカルストレージに設定
     start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
-    # wait秒待つ
+    # 2. wait秒待つ
     time.sleep(wait)
 
-    # wait秒待機後のユニークIDを取得
+    # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
@@ -224,7 +225,7 @@ thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (en
 thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
 ```
 
-### threading.localが使えないケース
+### threading.localの弱点
 
 * コルーチンを使ったコードではthreading.localを使えない
 * なぜなら、コルーチンはシングルスレッドで複数のタスクを処理するため、スレッドごとのローカルストレージが使えない
@@ -240,6 +241,7 @@ local_storage = threading.local()
 
 async def test_task(wait):
     start_unique_id = uuid.uuid4().hex
+
     thread_id = threading.get_ident()
     local_storage.unique_id = start_unique_id
 
@@ -272,101 +274,6 @@ thread_id=8370802496 (start_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (en
 thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 ```
 
-### threading.localのサンプルコード（マルチスレッド）
-
-```{revealjs-code-block} python
-import uuid
-import time
-import threading
-from threading import local
-
-local_storage = local()
-
-def test_task(wait):
-    # スレッドID取得
-    thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
-
-    # wait秒待つ
-    time.sleep(wait)
-
-    # wait秒待機後のユニークIDを取得
-    # （他のスレッドが値を上書きしていないはず）
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
-
-def main():
-    # 待機時間が異なるスレッドを3つ立ち上げる
-    threads = [
-        threading.Thread(target=test_task, args=(3,)),
-        threading.Thread(target=test_task, args=(2,)),
-        threading.Thread(target=test_task, args=(1,)),
-    ]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-if __name__ == "__main__":
-    main()
-```
-
-### threading.localのサンプルコード（マルチスレッド）実行結果
-
-`threading.local`と同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
-
-```{revealjs-code-block} shell
-thread_id=6146109440 (start_unique_id='cbe142e8e52346cdaa708f51faf3e27b') == (end_unique_id='cbe142e8e52346cdaa708f51faf3e27b')
-thread_id=6129283072 (start_unique_id='2d8fe026449c4060abafa488908521a8') == (end_unique_id='2d8fe026449c4060abafa488908521a8')
-thread_id=6112456704 (start_unique_id='3c9e2a2889c44c9e8427037ebb20d568') == (end_unique_id='3c9e2a2889c44c9e8427037ebb20d568')
-```
-
-### threading.localのサンプルコード（コルーチン）
-
-```{revealjs-code-block} python
-import threading
-from threading import local
-import asyncio
-import uuid
-
-local_storage = local()
-
-async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
-    thread_id = threading.get_ident()
-    local_storage.unique_id = start_unique_id
-
-    await asyncio.sleep(wait)
-
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
-
-async def main():
-    tasks = (
-        test_task(3),
-        test_task(2),
-        test_task(1),
-    )
-    await asyncio.gather(*tasks)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### threading.localのサンプルコード（コルーチン）実行結果
-
-`wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
-
-```{revealjs-code-block} shell
-thread_id=8323698496 (start_unique_id='a7d39fbb04514396b6dc8a1d232135f0') == (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-thread_id=8323698496 (start_unique_id='08bd2755081e4ddd88596416d89aecf3') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-thread_id=8323698496 (start_unique_id='3ca6b2e8c01b4cee919f15e50a246548') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-```
-
 ### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
 
 マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
@@ -389,14 +296,15 @@ local_storage = Local()  # ここを変えただけ
 def test_task(wait):
     # スレッドID取得
     thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
+
+    # 1. ユニークIDをローカルストレージに設定
     start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
-    # wait秒待つ
+    # 2. wait秒待つ
     time.sleep(wait)
 
-    # wait秒待機後のユニークIDを取得
+    # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
@@ -440,12 +348,17 @@ from asgiref.local import Local
 local_storage = Local()  # ここを変えただけ
 
 async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
+    # スレッドID取得
     thread_id = threading.get_ident()
+
+    # 1. ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
+    # 2. wait秒待つ
     await asyncio.sleep(wait)
 
+    # 3. wait秒待機後のユニークIDを取得
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
     print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
