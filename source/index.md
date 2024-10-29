@@ -39,7 +39,7 @@
 
 ### asgirefの概要
 
-* ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonパッケージ
+* ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonライブラリ
 * Djangoコミュニティが開発している
 
 ### asgirefに依存しているツール、フレームワーク
@@ -56,10 +56,46 @@
 
 ただし、バージョンが上がってasgirefに依存しなくなったものも載っている。
 
+### asgirefの主な機能
+
+* 同期処理から非同期処理への変換（`sync_to_async()`）
+* 非同期処理から同期処理への変換（`async_to_sync()`）
+* ローカルストレージ（asgiref.local.Local）
+* サーバーの基本機能
+* WSGIからASGIへのアダプター
+
+```{revealjs-break}
+```
+
+特に一番上の`sync_to_async()`はDjangoの非同期ビューを使う際はお世話になる。
+
+### Djangoで`sync_to_async()`が必要になるケース
+
+* Djangoでは非同期ビューがサポートされている（3.1から）
+* 非同期ビューの中では同期処理を呼べない（呼ぶとエラーになる仕組み）
+* とはいえ、Djangoの機能には非同期サポートしていないものもある
+* そこで、`sync_to_async()`で同期処理を非同期処理に変換する
+
+### `sync_to_async()`の使い方
+
+```{revealjs-code-block} python
+
+>>> from asgiref.sync import sync_to_async
+>>> # 同期処理の関数を引数として渡すと非同期関数に変換される
+>>> results = await sync_to_async(sync_function)
+>>> # 関数デコレータとしても使える
+>>> @sync_to_async
+>>> def sync_function(): ...
+```
+
+### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.LocaL
+
+実際にasgiref.local.Localを使って役立った体験が本トークのモチベーションなので、今日はasgiref.local.Localの話をします。
+
 ## asgiref.local.Localとは何か
 
 ### docstringによると
->
+
 > Local storage for async tasks.
 
 非同期タスク用のローカルストレージ
