@@ -225,6 +225,61 @@ thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (en
 thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
 ```
 
+### もし、threading.local以外のオブジェクトを使ったら
+
+```{revealjs-code-block} python
+import uuid
+import time
+import threading
+
+# もし、threading.local以外のオブジェクトを使ったら
+class LocalStorage: ...
+
+local_storage = LocalStorage()
+
+def test_task(wait):
+    # スレッドID取得
+    thread_id = threading.get_ident()
+
+    # 1. ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = start_unique_id
+
+    # 2. wait秒待つ
+    time.sleep(wait)
+
+    # 3. wait秒待機後のユニークIDを取得
+    # （他のスレッドが値を上書きしていないはず）
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+def main():
+    # 待機時間が異なるスレッドを3つ立ち上げる
+    threads = [
+        threading.Thread(target=test_task, args=(3,)),
+        threading.Thread(target=test_task, args=(2,)),
+        threading.Thread(target=test_task, args=(1,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == "__main__":
+    main()
+```
+
+### 実行結果
+
+`local_storage`はすべてのスレッドで共有のオブジェクトになっている。
+
+```{revealjs-code-block} shell
+thread_id=6187102208 (start_unique_id='512dffda46f44e6bbd12c01bba4d4f3c') == (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6170275840 (start_unique_id='0f5912e47aee412f9342c2e49bf96d2c') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6153449472 (start_unique_id='b1587085778e49f789fc02fb73f1ce9b') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+```
+
 ### threading.localの弱点
 
 * コルーチンを使ったコードではthreading.localを使えない
