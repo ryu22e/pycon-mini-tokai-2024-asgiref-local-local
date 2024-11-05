@@ -1,39 +1,49 @@
 # asgirefのクラスasgiref.local.Localは何のためにあるのか？
+
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a>
 <small>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</small>
 
 ## はじめに
+
 ### 自己紹介
+
 * Ryuji Tsutsui@ryu22e
 * さくらインターネット株式会社所属
 * Python歴は13年くらい（主にDjango）
 * Python Boot Camp、Shonan.py、GCPUG Shonanなどコミュニティ活動もしています
 * 著書（共著）：『[Python実践レシピ](https://gihyo.jp/book/2022/978-4-297-12576-9)』
 
-### このトークでお話すること
+### このトークで話すこと
+
 * asgirefというPythonパッケージの話
 * とりわけ、asgiref.local.Localというクラスについての解説
 
 ### このトークの対象者
+
 * マルチスレッド、コルーチンなど非同期処理の知識がある人
 * トーク中で解説するので、なんとなく知っていればOK
 
 ### このトークで得られること
+
 * asgirefの概要
 * asgiref.local.Localの用途、存在する理由
 
 ### このトークの構成
+
 * asgirefとは何か
 * asgiref.local.Localとは何か
 * asgiref.local.Localとthreading.localの違い
 * asgiref.local.Localとcontextvars.ContextVarの違い
 
 ## asgirefとは何か
+
 ### asgirefの概要
-* ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonパッケージ
+
+* ASGIアプリケーション（非同期処理を行うアプリケーション）を開発しやすくするPythonライブラリ
 * Djangoコミュニティが開発している
 
 ### asgirefに依存しているツール、フレームワーク
+
 * Daphne
 * Django
 * Connexion
@@ -46,19 +56,58 @@
 
 ただし、バージョンが上がってasgirefに依存しなくなったものも載っている。
 
+### asgirefの主な機能
+
+* 同期処理から非同期処理への変換（`sync_to_async()`）
+* 非同期処理から同期処理への変換（`async_to_sync()`）
+* ローカルストレージ（asgiref.local.Local）
+* サーバーの基本機能
+* WSGIからASGIへのアダプター
+
+```{revealjs-break}
+```
+
+特に一番上の`sync_to_async()`はDjangoの非同期ビューを使う際はお世話になる。
+
+### Djangoで`sync_to_async()`が必要になるケース
+
+* Djangoでは非同期ビューがサポートされている（3.1から）
+* 非同期ビューの中では同期処理を呼べない（呼ぶとエラーになる仕組み）
+* とはいえ、Djangoの機能には非同期サポートしていないものもある
+* そこで、`sync_to_async()`で同期処理を非同期処理に変換する
+
+### `sync_to_async()`の使い方
+
+```{revealjs-code-block} python
+
+>>> from asgiref.sync import sync_to_async
+>>> # 同期処理の関数を引数として渡すと非同期関数に変換される
+>>> results = await sync_to_async(sync_function)
+>>> # 関数デコレータとしても使える
+>>> @sync_to_async
+>>> def sync_function(): ...
+```
+
+### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.LocaL
+
+実際にasgiref.local.Localを使って役立った体験が本トークのモチベーションなので、今日はasgiref.local.Localの話をします。
+
 ## asgiref.local.Localとは何か
 
 ### docstringによると
+
 > Local storage for async tasks.
 
 非同期タスク用のローカルストレージ
 
 ### 私がこのクラスを使った経緯
+
 * DjangoアプリケーションのログにリクエストごとにユニークなIDを付与したかった
 * ミドルウェアで `uuid.uuid4()` で生成したIDを設定し、ロギングフィルターで取得するつもりだった
 * ところが、ミドルウェアで設定した値をロギングフィルターで取得する方法が見当たらなかった
 
 ### 参考にしたOSS
+
 [django-log-request-id](https://pypi.org/project/django-log-request-id/)を参考にした。
 
 ### django-log-request-idのミドルウェアの実装（一部抜粋）
@@ -112,15 +161,19 @@ local = Local()
 <https://github.com/dabapps/django-log-request-id/blob/2.1.0/log_request_id/__init__.py>
 
 ### asgiref.local.Localとthreading.local
+
 * どうやら、両者は似たようなものっぽい
 * どこが違うのだろうか？
 
 ## asgiref.local.Localとthreading.localの違い
+
 ### threading.localとは
+
 * threadingは標準モジュール
 * threading.localは、スレッドごとに固有のローカルストレージ
 
 ### threading.localのサンプルコード（マルチスレッド）
+
 ```{revealjs-code-block} python
 import uuid
 import time
@@ -132,14 +185,15 @@ local_storage = local()
 def test_task(wait):
     # スレッドID取得
     thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
+
+    # 1. ユニークIDをローカルストレージに設定
     start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
-    # wait秒待つ
+    # 2. wait秒待つ
     time.sleep(wait)
 
-    # wait秒待機後のユニークIDを取得
+    # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
@@ -162,6 +216,7 @@ if __name__ == "__main__":
 ```
 
 ### threading.localのサンプルコード（マルチスレッド）実行結果
+
 `threading.local`に入れたユニークIDがスレッドごとに異なることがわかる。
 
 ```{revealjs-code-block} shell
@@ -170,11 +225,68 @@ thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (en
 thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
 ```
 
-### threading.localが使えないケース
+### もし、threading.local以外のオブジェクトを使ったら
+
+```{revealjs-code-block} python
+import uuid
+import time
+import threading
+
+# もし、threading.local以外のオブジェクトを使ったら
+class LocalStorage: ...
+
+local_storage = LocalStorage()
+
+def test_task(wait):
+    # スレッドID取得
+    thread_id = threading.get_ident()
+
+    # 1. ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = start_unique_id
+
+    # 2. wait秒待つ
+    time.sleep(wait)
+
+    # 3. wait秒待機後のユニークIDを取得
+    # （他のスレッドが値を上書きしていないはず）
+    end_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
+    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+
+def main():
+    # 待機時間が異なるスレッドを3つ立ち上げる
+    threads = [
+        threading.Thread(target=test_task, args=(3,)),
+        threading.Thread(target=test_task, args=(2,)),
+        threading.Thread(target=test_task, args=(1,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == "__main__":
+    main()
+```
+
+### 実行結果
+
+`local_storage`はすべてのスレッドで共有のオブジェクトになっている。
+
+```{revealjs-code-block} shell
+thread_id=6187102208 (start_unique_id='512dffda46f44e6bbd12c01bba4d4f3c') == (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6170275840 (start_unique_id='0f5912e47aee412f9342c2e49bf96d2c') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6153449472 (start_unique_id='b1587085778e49f789fc02fb73f1ce9b') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+```
+
+### threading.localの弱点
+
 * コルーチンを使ったコードではthreading.localを使えない
 * なぜなら、コルーチンはシングルスレッドで複数のタスクを処理するため、スレッドごとのローカルストレージが使えない
 
 ### threading.localのサンプルコード（コルーチン）
+
 ```{revealjs-code-block} python
 import threading
 import asyncio
@@ -184,6 +296,7 @@ local_storage = threading.local()
 
 async def test_task(wait):
     start_unique_id = uuid.uuid4().hex
+
     thread_id = threading.get_ident()
     local_storage.unique_id = start_unique_id
 
@@ -207,6 +320,7 @@ if __name__ == "__main__":
 ```
 
 ### threading.localのサンプルコード（コルーチン）実行結果
+
 `wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
 
 ```{revealjs-code-block} shell
@@ -215,104 +329,16 @@ thread_id=8370802496 (start_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (en
 thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 ```
 
-### threading.localのサンプルコード（マルチスレッド）
-```{revealjs-code-block} python
-import uuid
-import time
-import threading
-from threading import local
-
-local_storage = local()
-
-def test_task(wait):
-    # スレッドID取得
-    thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
-
-    # wait秒待つ
-    time.sleep(wait)
-
-    # wait秒待機後のユニークIDを取得
-    # （他のスレッドが値を上書きしていないはず）
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
-
-def main():
-    # 待機時間が異なるスレッドを3つ立ち上げる
-    threads = [
-        threading.Thread(target=test_task, args=(3,)),
-        threading.Thread(target=test_task, args=(2,)),
-        threading.Thread(target=test_task, args=(1,)),
-    ]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-if __name__ == "__main__":
-    main()
-```
-
-### threading.localのサンプルコード（マルチスレッド）実行結果
-`threading.local`と同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
-
-```{revealjs-code-block} shell
-thread_id=6146109440 (start_unique_id='cbe142e8e52346cdaa708f51faf3e27b') == (end_unique_id='cbe142e8e52346cdaa708f51faf3e27b')
-thread_id=6129283072 (start_unique_id='2d8fe026449c4060abafa488908521a8') == (end_unique_id='2d8fe026449c4060abafa488908521a8')
-thread_id=6112456704 (start_unique_id='3c9e2a2889c44c9e8427037ebb20d568') == (end_unique_id='3c9e2a2889c44c9e8427037ebb20d568')
-```
-
-### threading.localのサンプルコード（コルーチン）
-```{revealjs-code-block} python
-import threading
-from threading import local
-import asyncio
-import uuid
-
-local_storage = local()
-
-async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
-    thread_id = threading.get_ident()
-    local_storage.unique_id = start_unique_id
-
-    await asyncio.sleep(wait)
-
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
-
-async def main():
-    tasks = (
-        test_task(3),
-        test_task(2),
-        test_task(1),
-    )
-    await asyncio.gather(*tasks)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### threading.localのサンプルコード（コルーチン）実行結果
-`wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
-
-```{revealjs-code-block} shell
-thread_id=8323698496 (start_unique_id='a7d39fbb04514396b6dc8a1d232135f0') == (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-thread_id=8323698496 (start_unique_id='08bd2755081e4ddd88596416d89aecf3') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-thread_id=8323698496 (start_unique_id='3ca6b2e8c01b4cee919f15e50a246548') != (end_unique_id='a7d39fbb04514396b6dc8a1d232135f0')
-```
-
 ### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
+
 マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
 
 ### そこで`asgiref.local.Local`クラスの登場
+
 `asgiref.local.Local`は、マルチスレッド、コルーチンの両方で使えるローカルストレージ
 
 ### asgiref.local.Localのサンプルコード（マルチスレッド）
+
 ```{revealjs-code-block} python
 import uuid
 import time
@@ -325,14 +351,15 @@ local_storage = Local()  # ここを変えただけ
 def test_task(wait):
     # スレッドID取得
     thread_id = threading.get_ident()
-    # ユニークIDをローカルストレージに設定
+
+    # 1. ユニークIDをローカルストレージに設定
     start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
-    # wait秒待つ
+    # 2. wait秒待つ
     time.sleep(wait)
 
-    # wait秒待機後のユニークIDを取得
+    # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
@@ -355,6 +382,7 @@ if __name__ == "__main__":
 ```
 
 ### asgiref.local.Localのサンプルコード（マルチスレッド）実行結果
+
 threading.localと同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
 
 ```{revealjs-code-block} shell
@@ -364,6 +392,7 @@ thread_id=6106624000 (start_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (en
 ```
 
 ### asgiref.local.Localのサンプルコード（コルーチン）
+
 ```{revealjs-code-block} python
 import threading
 import asyncio
@@ -374,12 +403,17 @@ from asgiref.local import Local
 local_storage = Local()  # ここを変えただけ
 
 async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
+    # スレッドID取得
     thread_id = threading.get_ident()
+
+    # 1. ユニークIDをローカルストレージに設定
+    start_unique_id = uuid.uuid4().hex
     local_storage.unique_id = start_unique_id
 
+    # 2. wait秒待つ
     await asyncio.sleep(wait)
 
+    # 3. wait秒待機後のユニークIDを取得
     end_unique_id = getattr(local_storage, "unique_id", None)
     equal_or_not = "==" if start_unique_id == end_unique_id else "!="
     print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
@@ -397,6 +431,7 @@ if __name__ == "__main__":
 ```
 
 ### asgiref.local.Localのサンプルコード（コルーチン）実行結果
+
 コルーチンごとに固有のローカルストレージが使えることがわかる。
 
 ```{revealjs-code-block} shell
@@ -406,20 +441,25 @@ thread_id=8323698496 (start_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (en
 ```
 
 ### ここまでのまとめ
+
 * threading.localはスレッドごとに固有のローカルストレージ
 * ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
 * asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
 
 ### Q. asgiref.local.Localはなぜコルーチンでも使えるのか？
+
 A.内部でcontextvars.ContextVarを使っているから（このあと詳しく説明します）
 
 ## asgiref.local.Localとcontextvars.ContextVarの違い
+
 ### contextvars.ContextVarとは
+
 * contextvarsはPythonの標準モジュール
 * contextvars.ContextVarは、コンテキスト変数を宣言するためのクラス
 * コルーチンごとに固有のコンテキスト変数を使える
 
 ### contextvars.ContextVarのサンプルコード
+
 ```{revealjs-code-block} python
 import threading
 from contextvars import ContextVar
@@ -455,6 +495,7 @@ if __name__ == "__main__":
 ```
 
 ### contextvars.ContextVarのサンプルコード実行結果
+
 コルーチンごとに固有のローカルストレージが使えることがわかる。
 
 ```{revealjs-code-block} shell
@@ -464,10 +505,13 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 ```
 
 ### contextvars.ContextVarの弱点
+
 * contextvars.ContextVarはスレッドセーフではない
 
 ## 最後に
+
 ### まとめ
+
 * threading.localはスレッドごとに固有のローカルストレージ
 * ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
 * asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
