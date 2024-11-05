@@ -34,6 +34,8 @@ release = "1.0"
 # ones.
 extensions = [
     "sphinx_revealjs",
+    "sphinx_revealjs.ext.screenshot",
+    "sphinxext.opengraph",
     "sphinx_budoux",
     "myst_parser",
 ]
@@ -90,3 +92,7 @@ revealjs_css_files = [
     "revealjs/plugin/highlight/zenburn.css",
     "css/title_uppercase.css",
 ]
+
+# OGP
+ogp_site_url = "https://pycon-mini-tokai-2024-asgiref-local-local.ryu22e.dev/"
+ogp_image = f"{ogp_site_url}_images/ogp/index.png"
