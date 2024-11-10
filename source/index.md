@@ -215,6 +215,8 @@ if __name__ == "__main__":
     main()
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads-py>
+
 ### threading.localのサンプルコード（マルチスレッド）実行結果
 
 `threading.local`に入れたユニークIDがスレッドごとに異なることがわかる。
@@ -224,6 +226,8 @@ thread_id=6173028352 (start_unique_id='0863e8995b064f3e9c24ed1dbe926577') == (en
 thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (end_unique_id='0fe21b299ab34f7e83fb979277ccce3a')
 thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads-md>
 
 ### もし、threading.local以外のオブジェクトを使ったら
 
@@ -270,6 +274,8 @@ if __name__ == "__main__":
     main()
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads2-py>
+
 ### 実行結果
 
 `local_storage`はすべてのスレッドで共有のオブジェクトになっている。
@@ -279,6 +285,8 @@ thread_id=6187102208 (start_unique_id='512dffda46f44e6bbd12c01bba4d4f3c') == (en
 thread_id=6170275840 (start_unique_id='0f5912e47aee412f9342c2e49bf96d2c') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
 thread_id=6153449472 (start_unique_id='b1587085778e49f789fc02fb73f1ce9b') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads2-md>
 
 ### threading.localの弱点
 
@@ -319,6 +327,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-co-routine-py>
+
 ### threading.localのサンプルコード（コルーチン）実行結果
 
 `wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
@@ -328,6 +338,8 @@ thread_id=8370802496 (start_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (en
 thread_id=8370802496 (start_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-co-routine-md>
 
 ### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
 
@@ -381,6 +393,8 @@ if __name__ == "__main__":
     main()
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-multithreads-py>
+
 ### asgiref.local.Localのサンプルコード（マルチスレッド）実行結果
 
 threading.localと同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
@@ -390,6 +404,8 @@ thread_id=6140276736 (start_unique_id='43faa0bb3add4921b1e2649af269646e') == (en
 thread_id=6123450368 (start_unique_id='d244e874e5f74940a944895c641302c3') == (end_unique_id='d244e874e5f74940a944895c641302c3')
 thread_id=6106624000 (start_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (end_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-multithreads-md>
 
 ### asgiref.local.Localのサンプルコード（コルーチン）
 
@@ -430,6 +446,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-co-routine-py>
+
 ### asgiref.local.Localのサンプルコード（コルーチン）実行結果
 
 コルーチンごとに固有のローカルストレージが使えることがわかる。
@@ -439,6 +457,8 @@ thread_id=8323698496 (start_unique_id='9484892561164a18af996c2cf7ab6c2f') == (en
 thread_id=8323698496 (start_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559') == (end_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559')
 thread_id=8323698496 (start_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (end_unique_id='9fc06c8056184fc88c1f3af56e77330d')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-co-routine-md>
 
 ### ここまでのまとめ
 
