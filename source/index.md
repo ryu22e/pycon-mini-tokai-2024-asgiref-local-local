@@ -458,8 +458,6 @@ thread_id=8323698496 (start_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559') == (en
 thread_id=8323698496 (start_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (end_unique_id='9fc06c8056184fc88c1f3af56e77330d')
 ```
 
-<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-co-routine-md>
-
 ### ここまでのまとめ
 
 * threading.localはスレッドごとに固有のローカルストレージ
@@ -514,6 +512,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-contextvars-contextvar-py>
+
 ### contextvars.ContextVarのサンプルコード実行結果
 
 コルーチンごとに固有のローカルストレージが使えることがわかる。
@@ -523,6 +523,8 @@ thread_id=8308739904 (start_unique_id='011b6db1ddca48b2a353667e9c79f34a') == (en
 thread_id=8308739904 (start_unique_id='dcfc53f6ec9149f99838a6815608c12b') == (end_unique_id='dcfc53f6ec9149f99838a6815608c12b')
 thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (end_unique_id='42ee7264770745a6b90b9e5e98082a57')
 ```
+
+<https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-contextvars-contextvar-md>
 
 ### contextvars.ContextVarの弱点
 
