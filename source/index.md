@@ -21,7 +21,7 @@
 ### このトークの対象者
 
 * マルチスレッド、コルーチンなど非同期処理の知識がある人
-* トーク中で解説するので、なんとなく知っていればOK
+* なんとなく知っていればOK
 
 ### このトークで得られること
 
@@ -343,7 +343,9 @@ thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (en
 
 ### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
 
-マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
+* マルチスレッドの例: gunicorn + Greenlet
+* コルーチンの例: Django、FastAPI
+* マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
 
 ### そこで`asgiref.local.Local`クラスの登場
 
@@ -484,13 +486,15 @@ from contextvars import ContextVar
 import asyncio
 import uuid
 
+# threading.localの説明の際に見せた、コルーチンの例とほぼ同じコード。
+
 # コンテキスト変数を宣言
 local_storage = ContextVar("local_storage", default=None)
 
 async def test_task(wait):
     start_unique_id = uuid.uuid4().hex
     thread_id = threading.get_ident()
-    # 値の設定はset()メソッドで行う
+    # 値の設定はset()メソッドで行う（設定できる値は1個のみ）
     local_storage.set(start_unique_id)
 
     await asyncio.sleep(wait)
@@ -529,15 +533,32 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 ### contextvars.ContextVarの弱点
 
 * contextvars.ContextVarはスレッドセーフではない
+* 一応マルチスレッドでも固有のローカルストレージになるが、上記の理由により、実行タイミングによっては予期せぬ挙動になる
+* 設定できる値は1個だけ
+
+### つまり
+
+標準モジュールでは、マルチスレッドではthreding.local、コルーチンではcontextvars.ContextVarを使う。
+
+### asgiref.local.Localではどうしているのか
+
+* asgiref.local.Localでは、デフォルトではcontextvars.ContextVarを使って値を設定、取得する
+* オプションでthreding.localを使うようにもできる
+* 値の取得、設定のコードで排他制御のコードを入れてスレッドセーフになるように工夫している
+
+### `local_storage.unique_id = ...`のような実装を可能にする仕組み
+
+* contextvars.ContextVarは1個の値しか設定できない
+* asgiref.local.Localでは辞書型と組み合わせてcontextvars.ContextVarを使っている
+    * <https://github.com/django/asgiref/blob/05ae3eee3fae4005ae4cfb0bb22d281725fabade/asgiref/local.py#L12>
 
 ## 最後に
 
 ### まとめ
 
-* threading.localはスレッドごとに固有のローカルストレージ
-* ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
-* asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
-* asgiref.local.Localは内部でcontextvars.ContextVarを使っている
+* threding.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
+* 標準モジュールには万能のローカルストレージはない
+* asgiref.local.Localは内部でcontextvars.ContextVarを使い、弱点を補う工夫で万能のローカルストレージを実現している
 
 ### ご清聴ありがとうございました
 
