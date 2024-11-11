@@ -529,6 +529,7 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 ### contextvars.ContextVarの弱点
 
 * contextvars.ContextVarはスレッドセーフではない
+* asgiref.local.Localでは、contextvars.ContextVarをラップしたスレッドセーフなクラスを作っている
 
 ## 最後に
 
