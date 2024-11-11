@@ -484,6 +484,8 @@ from contextvars import ContextVar
 import asyncio
 import uuid
 
+# threading.localの説明の際に見せた、コルーチンの例とほぼ同じコード。
+
 # コンテキスト変数を宣言
 local_storage = ContextVar("local_storage", default=None)
 
