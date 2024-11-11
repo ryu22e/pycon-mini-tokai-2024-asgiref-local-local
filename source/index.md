@@ -492,7 +492,7 @@ local_storage = ContextVar("local_storage", default=None)
 async def test_task(wait):
     start_unique_id = uuid.uuid4().hex
     thread_id = threading.get_ident()
-    # 値の設定はset()メソッドで行う
+    # 値の設定はset()メソッドで行う（設定できる値は1個のみ）
     local_storage.set(start_unique_id)
 
     await asyncio.sleep(wait)
@@ -530,8 +530,17 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ### contextvars.ContextVarの弱点
 
-* contextvars.ContextVarはスレッドセーフではない
-* asgiref.local.Localでは、contextvars.ContextVarを使って値を設定、取得するコードで排他制御のコードを入れている
+contextvars.ContextVarはスレッドセーフではない
+
+### つまり
+
+標準モジュールでは、マルチスレッドではthreding.local、コルーチンではcontextvars.ContextVarを使う。
+
+### asgiref.local.Localではどうしているのか
+
+* asgiref.local.Localでは、デフォルトではcontextvars.ContextVarを使って値を設定、取得する
+* オプションでthreding.localを使うようにもできる
+* 値の取得、設定のコードで排他制御のコードを入れてスレッドセーフになるように工夫している
 
 ### `local_storage.unique_id = ...`のような実装を可能にする仕組み
 
