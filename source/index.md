@@ -530,7 +530,9 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ### contextvars.ContextVarの弱点
 
-contextvars.ContextVarはスレッドセーフではない
+* contextvars.ContextVarはスレッドセーフではない
+* 一応マルチスレッドでも固有のローカルストレージになるが、上記の理由により、実行タイミングによっては予期せぬ挙動になる
+* 設定できる値は1個だけ
 
 ### つまり
 
@@ -552,10 +554,9 @@ contextvars.ContextVarはスレッドセーフではない
 
 ### まとめ
 
-* threading.localはスレッドごとに固有のローカルストレージ
-* ただし、コルーチンはシングルスレッドなのでthreading.localは使えない
-* asgiref.local.Localはマルチスレッド、コルーチン両方で使える万能ローカルストレージ
-* asgiref.local.Localは内部でcontextvars.ContextVarを使っている
+* threding.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
+* 標準モジュールには万能のローカルストレージはない
+* asgiref.local.Localは内部でcontextvars.ContextVarを使い、弱点を補う工夫で万能のローカルストレージを実現している
 
 ### ご清聴ありがとうございました
 
