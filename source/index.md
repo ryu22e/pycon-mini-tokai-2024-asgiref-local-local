@@ -529,7 +529,13 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 ### contextvars.ContextVarの弱点
 
 * contextvars.ContextVarはスレッドセーフではない
-* asgiref.local.Localでは、contextvars.ContextVarをラップしたスレッドセーフなクラスを作っている
+* asgiref.local.Localでは、contextvars.ContextVarを使って値を設定、取得するコードで排他制御のコードを入れている
+
+### `local_storage.unique_id = ...`のような実装を可能にする仕組み
+
+* contextvars.ContextVarは1個の値しか設定できない
+* asgiref.local.Localでは辞書型と組み合わせてcontextvars.ContextVarを使っている
+    * <https://github.com/django/asgiref/blob/05ae3eee3fae4005ae4cfb0bb22d281725fabade/asgiref/local.py#L12>
 
 ## 最後に
 
