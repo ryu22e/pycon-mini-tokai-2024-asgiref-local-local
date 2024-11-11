@@ -343,7 +343,9 @@ thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (en
 
 ### PythonのWebアプリケーションは、マルチスレッド、コルーチンの両方を使うことがある
 
-マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
+* マルチスレッドの例: gunicorn + Greenlet
+* コルーチンの例: Django、FastAPI
+* マルチスレッド、コルーチンの両方で使えるローカルストレージがあると便利
 
 ### そこで`asgiref.local.Local`クラスの登場
 
