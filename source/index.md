@@ -88,7 +88,7 @@
 >>> def sync_function(): ...
 ```
 
-### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.LocaL
+### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.Local
 
 実際にasgiref.local.Localを使って役立った体験が本トークのモチベーションなので、今日はasgiref.local.Localの話をします。
 
