@@ -540,12 +540,12 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ### つまり
 
-標準モジュールでは、マルチスレッドではthreding.local、コルーチンではcontextvars.ContextVarを使う。
+標準モジュールでは、マルチスレッドではthreading.local、コルーチンではcontextvars.ContextVarを使う。
 
 ### asgiref.local.Localではどうしているのか
 
 * asgiref.local.Localでは、デフォルトではcontextvars.ContextVarを使って値を設定、取得する
-* オプションでthreding.localを使うようにもできる
+* オプションでthreading.localを使うようにもできる
 * 値の取得、設定のコードで排他制御のコードを入れてスレッドセーフになるように工夫している
 
 ### `local_storage.unique_id = ...`のような実装を可能にする仕組み
@@ -558,7 +558,7 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ### まとめ
 
-* threding.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
+* threading.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
 * 標準モジュールには万能のローカルストレージはない
 * asgiref.local.Localは内部でcontextvars.ContextVarを使い、弱点を補う工夫で万能のローカルストレージを実現している
 
