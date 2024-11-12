@@ -96,6 +96,8 @@
 
 ### docstringによると
 
+<https://github.com/django/asgiref/blob/e38d3c327c01aa82c0bf2726220700c1097ea6cc/asgiref/local.py#L41>
+
 > Local storage for async tasks.
 
 非同期タスク用のローカルストレージ
@@ -550,7 +552,7 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 * contextvars.ContextVarは1個の値しか設定できない
 * asgiref.local.Localでは辞書型と組み合わせてcontextvars.ContextVarを使っている
-    * <https://github.com/django/asgiref/blob/05ae3eee3fae4005ae4cfb0bb22d281725fabade/asgiref/local.py#L12>
+    * <https://github.com/django/asgiref/blob/e38d3c327c01aa82c0bf2726220700c1097ea6cc/asgiref/local.py#L12>
 
 ## 最後に
 
