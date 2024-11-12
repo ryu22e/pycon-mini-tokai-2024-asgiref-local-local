@@ -88,13 +88,15 @@
 >>> def sync_function(): ...
 ```
 
-### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.LocaL
+### 今回のトークの主役は`sync_to_async()`ではなくasgiref.local.Local
 
 実際にasgiref.local.Localを使って役立った体験が本トークのモチベーションなので、今日はasgiref.local.Localの話をします。
 
 ## asgiref.local.Localとは何か
 
 ### docstringによると
+
+<https://github.com/django/asgiref/blob/e38d3c327c01aa82c0bf2726220700c1097ea6cc/asgiref/local.py#L41>
 
 > Local storage for async tasks.
 
@@ -538,25 +540,25 @@ thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (en
 
 ### つまり
 
-標準モジュールでは、マルチスレッドではthreding.local、コルーチンではcontextvars.ContextVarを使う。
+標準モジュールでは、マルチスレッドではthreading.local、コルーチンではcontextvars.ContextVarを使う。
 
 ### asgiref.local.Localではどうしているのか
 
 * asgiref.local.Localでは、デフォルトではcontextvars.ContextVarを使って値を設定、取得する
-* オプションでthreding.localを使うようにもできる
+* オプションでthreading.localを使うようにもできる
 * 値の取得、設定のコードで排他制御のコードを入れてスレッドセーフになるように工夫している
 
 ### `local_storage.unique_id = ...`のような実装を可能にする仕組み
 
 * contextvars.ContextVarは1個の値しか設定できない
 * asgiref.local.Localでは辞書型と組み合わせてcontextvars.ContextVarを使っている
-    * <https://github.com/django/asgiref/blob/05ae3eee3fae4005ae4cfb0bb22d281725fabade/asgiref/local.py#L12>
+    * <https://github.com/django/asgiref/blob/e38d3c327c01aa82c0bf2726220700c1097ea6cc/asgiref/local.py#L12>
 
 ## 最後に
 
 ### まとめ
 
-* threding.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
+* threading.local、contextvars.ContextVarはどちらもローカルストレージとして使えるがそれぞれ弱点がある
 * 標準モジュールには万能のローカルストレージはない
 * asgiref.local.Localは内部でcontextvars.ContextVarを使い、弱点を補う工夫で万能のローカルストレージを実現している
 
