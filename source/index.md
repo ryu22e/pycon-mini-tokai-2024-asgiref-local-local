@@ -13,6 +13,12 @@
 * Python Boot Camp、Shonan.py、GCPUG Shonanなどコミュニティ活動もしています
 * 著書（共著）：『[Python実践レシピ](https://gihyo.jp/book/2022/978-4-297-12576-9)』
 
+### 名古屋のイベントでの登壇は約3年ぶり2回目
+
+* 前回は「[Open Source Conference 2021 Online/Nagoya](https://event.ospn.jp/osc2021-online-nagoya/)」
+* 前回はコロナ禍でオフライン開催ができなかったのですが、今回は念願の現地参加です
+* がんばるぞ！（主に懇親会を）
+
 ### このトークで話すこと
 
 * asgirefというPythonパッケージの話
@@ -26,7 +32,7 @@
 ### このトークで得られること
 
 * asgirefの概要
-* asgiref.local.Localの用途、存在する理由
+* asgiref.local.Localの用途、仕組み
 
 ### このトークの構成
 
