@@ -195,17 +195,17 @@ def test_task(wait):
     thread_id = threading.get_ident()
 
     # 1. ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
+    step1_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = step1_unique_id
 
     # 2. wait秒待つ
     time.sleep(wait)
 
     # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 def main():
     # 待機時間が異なるスレッドを3つ立ち上げる
@@ -230,9 +230,9 @@ if __name__ == "__main__":
 `threading.local`に入れたユニークIDがスレッドごとに異なることがわかる。
 
 ```{revealjs-code-block} shell
-thread_id=6173028352 (start_unique_id='0863e8995b064f3e9c24ed1dbe926577') == (end_unique_id='0863e8995b064f3e9c24ed1dbe926577')
-thread_id=6156201984 (start_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (end_unique_id='0fe21b299ab34f7e83fb979277ccce3a')
-thread_id=6139375616 (start_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (end_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
+thread_id=6173028352 (step1_unique_id='0863e8995b064f3e9c24ed1dbe926577') == (step3_unique_id='0863e8995b064f3e9c24ed1dbe926577')
+thread_id=6156201984 (step1_unique_id='0fe21b299ab34f7e83fb979277ccce3a') == (step3_unique_id='0fe21b299ab34f7e83fb979277ccce3a')
+thread_id=6139375616 (step1_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (step3_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32')
 ```
 
 <https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads-md>
@@ -254,17 +254,17 @@ def test_task(wait):
     thread_id = threading.get_ident()
 
     # 1. ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
+    step1_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = step1_unique_id
 
     # 2. wait秒待つ
     time.sleep(wait)
 
     # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 def main():
     # 待機時間が異なるスレッドを3つ立ち上げる
@@ -289,9 +289,9 @@ if __name__ == "__main__":
 `local_storage`はすべてのスレッドで共有のオブジェクトになっている。
 
 ```{revealjs-code-block} shell
-thread_id=6187102208 (start_unique_id='512dffda46f44e6bbd12c01bba4d4f3c') == (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
-thread_id=6170275840 (start_unique_id='0f5912e47aee412f9342c2e49bf96d2c') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
-thread_id=6153449472 (start_unique_id='b1587085778e49f789fc02fb73f1ce9b') != (end_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6187102208 (step1_unique_id='512dffda46f44e6bbd12c01bba4d4f3c') == (step3_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6170275840 (step1_unique_id='0f5912e47aee412f9342c2e49bf96d2c') != (step3_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
+thread_id=6153449472 (step1_unique_id='b1587085778e49f789fc02fb73f1ce9b') != (step3_unique_id='512dffda46f44e6bbd12c01bba4d4f3c')
 ```
 
 <https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-multithreads2-md>
@@ -311,17 +311,17 @@ import uuid
 local_storage = threading.local()
 
 async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
+    step1_unique_id = uuid.uuid4().hex
 
     thread_id = threading.get_ident()
-    local_storage.unique_id = start_unique_id
+    local_storage.unique_id = step1_unique_id
 
     # ここで待機中に別のコルーチンでlocal_storage.unique_idを上書きしてしまう場合がある。
     await asyncio.sleep(wait)
 
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 async def main():
     tasks = (
@@ -342,9 +342,9 @@ if __name__ == "__main__":
 `wait`秒待機中に他のコルーチンが`local_storage.unique_id`を上書きしてしまうことがある。
 
 ```{revealjs-code-block} shell
-thread_id=8370802496 (start_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
-thread_id=8370802496 (start_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
-thread_id=8370802496 (start_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (end_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (step1_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1') == (step3_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (step1_unique_id='cdd46248fbe44f57a2a488919add7d1e') != (step3_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
+thread_id=8370802496 (step1_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (step3_unique_id='b8e9a1f3e8714831b2aa8275fa47b8f1')
 ```
 
 <https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-threading-local-co-routine-md>
@@ -375,17 +375,17 @@ def test_task(wait):
     thread_id = threading.get_ident()
 
     # 1. ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
+    step1_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = step1_unique_id
 
     # 2. wait秒待つ
     time.sleep(wait)
 
     # 3. wait秒待機後のユニークIDを取得
     # （他のスレッドが値を上書きしていないはず）
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 def main():
     # 待機時間が異なるスレッドを3つ立ち上げる
@@ -410,9 +410,9 @@ if __name__ == "__main__":
 threading.localと同じく、`asgiref.local.Local`に入れたユニークIDがスレッドごとに異なることがわかる。
 
 ```{revealjs-code-block} shell
-thread_id=6140276736 (start_unique_id='43faa0bb3add4921b1e2649af269646e') == (end_unique_id='43faa0bb3add4921b1e2649af269646e')
-thread_id=6123450368 (start_unique_id='d244e874e5f74940a944895c641302c3') == (end_unique_id='d244e874e5f74940a944895c641302c3')
-thread_id=6106624000 (start_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (end_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b')
+thread_id=6140276736 (step1_unique_id='43faa0bb3add4921b1e2649af269646e') == (step3_unique_id='43faa0bb3add4921b1e2649af269646e')
+thread_id=6123450368 (step1_unique_id='d244e874e5f74940a944895c641302c3') == (step3_unique_id='d244e874e5f74940a944895c641302c3')
+thread_id=6106624000 (step1_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (step3_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b')
 ```
 
 <https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-asgiref-local-local-multithreads-md>
@@ -433,16 +433,16 @@ async def test_task(wait):
     thread_id = threading.get_ident()
 
     # 1. ユニークIDをローカルストレージに設定
-    start_unique_id = uuid.uuid4().hex
-    local_storage.unique_id = start_unique_id
+    step1_unique_id = uuid.uuid4().hex
+    local_storage.unique_id = step1_unique_id
 
     # 2. wait秒待つ
     await asyncio.sleep(wait)
 
     # 3. wait秒待機後のユニークIDを取得
-    end_unique_id = getattr(local_storage, "unique_id", None)
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = getattr(local_storage, "unique_id", None)
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 async def main():
     tasks = (
@@ -463,9 +463,9 @@ if __name__ == "__main__":
 コルーチンごとに固有のローカルストレージが使えることがわかる。
 
 ```{revealjs-code-block} shell
-thread_id=8323698496 (start_unique_id='9484892561164a18af996c2cf7ab6c2f') == (end_unique_id='9484892561164a18af996c2cf7ab6c2f')
-thread_id=8323698496 (start_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559') == (end_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559')
-thread_id=8323698496 (start_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (end_unique_id='9fc06c8056184fc88c1f3af56e77330d')
+thread_id=8323698496 (step1_unique_id='9484892561164a18af996c2cf7ab6c2f') == (step3_unique_id='9484892561164a18af996c2cf7ab6c2f')
+thread_id=8323698496 (step1_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559') == (step3_unique_id='2f7b73f1301648f3a6cf4a8b2d29f559')
+thread_id=8323698496 (step1_unique_id='9fc06c8056184fc88c1f3af56e77330d') == (step3_unique_id='9fc06c8056184fc88c1f3af56e77330d')
 ```
 
 ### ここまでのまとめ
@@ -500,17 +500,17 @@ import uuid
 local_storage = ContextVar("local_storage", default=None)
 
 async def test_task(wait):
-    start_unique_id = uuid.uuid4().hex
+    step1_unique_id = uuid.uuid4().hex
     thread_id = threading.get_ident()
     # 値の設定はset()メソッドで行う（設定できる値は1個のみ）
-    local_storage.set(start_unique_id)
+    local_storage.set(step1_unique_id)
 
     await asyncio.sleep(wait)
 
     # 値の取得はget()メソッドで行う
-    end_unique_id = local_storage.get()
-    equal_or_not = "==" if start_unique_id == end_unique_id else "!="
-    print(f"{thread_id=} ({start_unique_id=}) {equal_or_not} ({end_unique_id=})")
+    step3_unique_id = local_storage.get()
+    equal_or_not = "==" if step1_unique_id == step3_unique_id else "!="
+    print(f"{thread_id=} ({step1_unique_id=}) {equal_or_not} ({step3_unique_id=})")
 
 async def main():
     tasks = (
@@ -531,9 +531,9 @@ if __name__ == "__main__":
 コルーチンごとに固有のローカルストレージが使えることがわかる。
 
 ```{revealjs-code-block} shell
-thread_id=8308739904 (start_unique_id='011b6db1ddca48b2a353667e9c79f34a') == (end_unique_id='011b6db1ddca48b2a353667e9c79f34a')
-thread_id=8308739904 (start_unique_id='dcfc53f6ec9149f99838a6815608c12b') == (end_unique_id='dcfc53f6ec9149f99838a6815608c12b')
-thread_id=8308739904 (start_unique_id='42ee7264770745a6b90b9e5e98082a57') == (end_unique_id='42ee7264770745a6b90b9e5e98082a57')
+thread_id=8308739904 (step1_unique_id='011b6db1ddca48b2a353667e9c79f34a') == (step3_unique_id='011b6db1ddca48b2a353667e9c79f34a')
+thread_id=8308739904 (step1_unique_id='dcfc53f6ec9149f99838a6815608c12b') == (step3_unique_id='dcfc53f6ec9149f99838a6815608c12b')
+thread_id=8308739904 (step1_unique_id='42ee7264770745a6b90b9e5e98082a57') == (step3_unique_id='42ee7264770745a6b90b9e5e98082a57')
 ```
 
 <https://gist.github.com/ryu22e/31595bbaf94aa9ec3204651c28e86841#file-contextvars-contextvar-md>
