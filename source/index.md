@@ -251,6 +251,8 @@ thread_id=6139375616 (step1_unique_id='2e7e9d7b8b59439dbd73fc826e45cc32') == (st
 ### もし、threading.local以外のオブジェクトを使ったら
 
 ```{revealjs-code-block} python
+:data-line-numbers: 5,6,8
+
 import uuid
 import time
 import threading
