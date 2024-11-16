@@ -121,6 +121,7 @@
 ### django-log-request-idのミドルウェアの実装（一部抜粋）
 
 ```{revealjs-code-block} python
+:data-line-numbers: 5
 
 # （省略）
 class RequestIDMiddleware(MiddlewareMixin):
@@ -135,6 +136,7 @@ class RequestIDMiddleware(MiddlewareMixin):
 ### django-log-request-idのロギングフィルターの実装（一部抜粋）
 
 ```{revealjs-code-block} python
+:data-line-numbers: 6,7
 
 # （省略）
 class RequestIDFilter(logging.Filter):
@@ -151,6 +153,8 @@ class RequestIDFilter(logging.Filter):
 ### django-log-request-idのlocal変数の定義（一部抜粋）
 
 ```{revealjs-code-block} python
+:data-line-numbers: 7,9
+
 import threading
 
 __version__ = "2.1.0"
@@ -362,6 +366,8 @@ thread_id=8370802496 (step1_unique_id='39eb437c91e8437dae500b91e36bb3ff') != (st
 ### asgiref.local.Localのサンプルコード（マルチスレッド）
 
 ```{revealjs-code-block} python
+:data-line-numbers: 5,7
+
 import uuid
 import time
 import threading
@@ -420,6 +426,8 @@ thread_id=6106624000 (step1_unique_id='4ed999ac3ad04dbaafa26eda3ad71a0b') == (st
 ### asgiref.local.Localのサンプルコード（コルーチン）
 
 ```{revealjs-code-block} python
+:data-line-numbers: 5,7
+
 import threading
 import asyncio
 import uuid
@@ -489,6 +497,8 @@ A.内部でcontextvars.ContextVarを使っているから（このあと詳し�
 ### contextvars.ContextVarのサンプルコード
 
 ```{revealjs-code-block} python
+:data-line-numbers: 2,6,8,9
+
 import threading
 from contextvars import ContextVar
 import asyncio
