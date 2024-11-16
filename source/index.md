@@ -24,7 +24,7 @@ Ryuji Tsutsui
 
 * 前回は「[Open Source Conference 2021 Online/Nagoya](https://event.ospn.jp/osc2021-online-nagoya/)」
 * 前回はコロナ禍でオフライン開催ができなかったのですが、今回は念願の現地参加です
-* がんばるぞ！（主に懇親会を）
+* がんばるぞ！（特に懇親会を）
 
 ### このトークで話すこと
 
