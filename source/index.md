@@ -506,7 +506,7 @@ A.内部でcontextvars.ContextVarを使っているから（このあと詳し�
 ### contextvars.ContextVarのサンプルコード
 
 ```{revealjs-code-block} python
-:data-line-numbers: 2,6,8,9
+:data-line-numbers: 2,6,8,9,14,15,19,20
 
 import threading
 from contextvars import ContextVar
